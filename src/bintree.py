@@ -3,3 +3,4 @@ class bintree:
         self.val = None
         self.left = None
         self.right = None
+        self.level = 0
