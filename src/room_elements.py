@@ -18,7 +18,7 @@ class room_element:
     def space(self):
         return self.dims.w * self.dims.h
 
-def cr(p_element, p_player_count):
+def cr(p_xp_amount, p_player_count):
     """
     Returns the specified elements' CR for the specified number of players.
     """
@@ -33,7 +33,7 @@ def cr(p_element, p_player_count):
     
     i = 0
     while i != len(base_cr_xp): #find appropriate cr
-        if p_element.xp_value <= (base_cr_xp[i] * p_player_count):
+        if p_xp_amount <= (base_cr_xp[i] * p_player_count):
             return i + 1
     return len(base_cr_xp) #max cr
     
