@@ -13,6 +13,7 @@ class room_element:
         self.dims = dimensions()
         self.type = element_type.other
         self.xp_value = 0
+        self.name = "NONAME"
         
     def space(self):
         return self.dims.w * self.dims.h
@@ -35,3 +36,16 @@ def cr(p_element, p_player_count):
         if p_element.xp_value <= (base_cr_xp[i] * p_player_count):
             return i + 1
     return len(base_cr_xp) #max cr
+    
+class enemy(room_element):
+    def __init__():
+        self.type = element_type.enemy
+        
+class trap(room_element):
+    def __init__():
+        self.type = element_type.trap
+        
+class treasure(room_element):
+    def __init__():
+        self.type = element_type.treasure
+        self.gp_value = 0
