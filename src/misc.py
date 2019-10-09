@@ -2,17 +2,17 @@ class dimensions:
     """
     Width/Height pair.
     """
-    def __init__(self):
-        self.w = 0
-        self.h = 0
+    def __init__(self, w = 0, h = 0):
+        self.w = w
+        self.h = h
         
 class point:
     """
     X/Y coordinate.
     """
-    def __init__(self):
-        self.x = 0
-        self.y = 0
+    def __init__(self, x, y):
+        self.x = x
+        self.y = y
         
 def cr(p_xp_amount, p_player_count):
     """
