@@ -26,6 +26,11 @@ class split_types(Enum):
     vertical = 0
     horizontal = 1
 
+class corridor:
+    def __init__(self):
+        self.topleft = point()
+        self.dims = dimensions()
+
 def _flip_split_type(p_type):
     return split_types.vertical if p_type == split_types.horizontal else split_types.horizontal
 
@@ -149,6 +154,10 @@ class map:
         root_room = room()
         root_room.dims = p_dims
         self.dungeon.val = root_room
+        self.corridors = []
+    
+    def gen_corridors(self):
+        pass
     
     def generate_tree(self, p_config):
         _gen_tree_impl(self.dungeon, p_config)
@@ -163,4 +172,4 @@ if __name__ == "__main__":
     mymap.generate(generator_config())
     
     renderer = render()
-    renderer.render_to_file(mymap.dungeon, "test.png")
+    renderer.render_to_file(mymap, "test.png")
