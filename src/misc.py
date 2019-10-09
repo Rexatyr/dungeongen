@@ -10,7 +10,7 @@ class point:
     """
     X/Y coordinate.
     """
-    def __init__(self, x, y):
+    def __init__(self, x = 0, y = 0):
         self.x = x
         self.y = y
         
@@ -25,7 +25,7 @@ def cr(p_xp_amount, p_player_count):
         3900, 5000, 5900, 7200, 8400, 
         10000, 11500, 13000, 15000, 18000, 
         20000, 22000, 25000, 33000, 41000,
-        50000, 62000, 75000, 90000, 105000
+        50000, 62000, 75000, 90000, 105000,
         120000, 135000, 155000] #cr xp for 4 players
     base_cr_xp = [x for x in map(lambda y: y // 4)] #normalize to 1 player
     
