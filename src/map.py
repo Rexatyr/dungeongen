@@ -1,8 +1,10 @@
+import random
 from enum import Enum
 
 from bintree import bintree
 from room import room
 from misc import dimensions, point
+from renderer import render
 
 class rejected_exception(Exception): #Raised when a generated dungeon cannot fulfill the requirements defined by the config.
     pass
@@ -10,10 +12,11 @@ class rejected_exception(Exception): #Raised when a generated dungeon cannot ful
 class generator_config:
     def __init__(self):
         self.dims = dimensions()
-        self.min_span = 2 #minimum width/height for any room (after deducting offsets)
+        self.min_span = 4 #minimum width/height for any room (after deducting offsets)
+        self.min_offset = 1 #minimum offset for each side
         self.corridor_min_width = 1
         self.corridor_max_width = 4 #min/max width for corridors
-        self.max_depth = 2 #maximum amount of "splits" in the dungeon tree (higher = more, smaller rooms)
+        self.max_depth = 3 #maximum amount of "splits" in the dungeon tree (higher = more, smaller rooms)
         self.early_stop_chance = 0.1 #chance to stop splitting before reaching max depth. 
         self.early_stop_factor = 2 #factor for early_stop_chance - multiplied with early_stop_chance every level beyond the first
                                    #i.e. with a factor of 2 and a chance of 0.1, level 2 has a stop chance of 0.1 * 2 * 2 = 0.4.
@@ -33,14 +36,14 @@ def _pick_split_point(p_span, p_config):
     Returns -1 if the span is not wide enough to fit two new rooms with any split.
     """
     #new rooms each need at least p_config.min_span tiles
-    if p_span < p_config.min_span * 2:
+    if p_span < (p_config.min_span + p_config.min_offset * 2) * 2:
         return -1
-    min = p_config.min_span
-    max = p_span - p_config.min_span
-    return (min + max) // 2 #TODO return center for now, make random later
+    min = p_config.min_span + 2 * p_config.min_offset
+    max = p_span - p_config.min_span - 2 * p_config.min_offset
+    return random.randint(min, max) if min != max else min
 
-def _pick_split_dir(): #TODO make this random
-    return split_types.vertical
+def _pick_split_dir():
+    return random.choice([split_types.vertical, split_types.horizontal])
 
 def _do_split(p_room, p_split_dir, p_config):
     """
@@ -111,11 +114,26 @@ def _gen_tree_impl(p_tree, p_config):
     _gen_tree_impl(p_tree.left, p_config) #recurse for new child rooms
     _gen_tree_impl(p_tree.right, p_config)
     
-def _add_offset_single(p_room, p_config): #TODO make this random
-    p_room.offset_left = 1
-    p_room.offset_right = 1
-    p_room.offset_top = 1
-    p_room.offset_bottom = 1
+def _add_offset_single(p_room, p_config): 
+    h = p_room.dims.h
+    w = p_room.dims.w
+    h_max = w - p_config.min_span - 2 * p_config.min_offset
+    v_max = h - p_config.min_span - 2 * p_config.min_offset
+    h_offset = random.randint(0, h_max) if h_max != 0 else 0
+    v_offset = random.randint(0, v_max) if v_max != 0 else 0
+    #'split' offsets into left/right and top/bottom
+    p_room.offset_left = random.randint(0, h_offset) if h_offset != 0 else 0 
+    p_room.offset_right = h_offset - p_room.offset_left
+    p_room.offset_top = random.randint(0, v_offset) if v_offset != 0 else 0
+    p_room.offset_bottom = v_offset - p_room.offset_top
+    
+    p_room.offset_left += p_config.min_offset
+    p_room.offset_right += p_config.min_offset
+    p_room.offset_top += p_config.min_offset
+    p_room.offset_bottom += p_config.min_offset
+    
+    if p_room.offset_left == 0 or p_room.offset_right == 0 or p_room.offset_top == 0 or p_room.offset_bottom == 0:
+        raise ValueError("Illegal offset!")
     
 def _add_offsets(p_dungeon, p_config):
     """
@@ -124,16 +142,6 @@ def _add_offsets(p_dungeon, p_config):
     leafs = p_dungeon.leafs()
     for leaf in leafs:
         _add_offset_single(leaf.val, p_config)
-    
-def _print_room(p_room):
-    print("topleft: ({}, {})".format(p_room.topleft.x, p_room.topleft.y))
-    print("dims: ({}, {})".format(p_room.dims.w, p_room.dims.h))
-    
-def _print_tree(p_tree):
-    leafs = p_tree.leafs()
-    for leaf in leafs:
-        _print_room(leaf.val)
-        print("")
     
 class map:
     def __init__(self, p_dims):
@@ -150,6 +158,9 @@ class map:
         self.generate_tree(p_config)
         
 if __name__ == "__main__":
+    random.seed()
     mymap = map(dimensions(50, 50))
     mymap.generate(generator_config())
-    _print_tree(mymap.dungeon)
+    
+    renderer = render()
+    renderer.render_to_file(mymap.dungeon, "test.png")
